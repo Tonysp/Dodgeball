@@ -109,17 +109,19 @@ public class TwoTeamGame extends Game {
         TextReplacementConfig.Builder nameReplacement = TextReplacementConfig.builder().match("%NAME%");
         TextReplacementConfig.Builder hitsReplacement = TextReplacementConfig.builder().match("%HITS%");
 
-        score.entrySet().stream()
-                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                .limit(5)
-                .forEach(entry -> {
-                    AtomicInteger rank = new AtomicInteger(1);
-                    getPlayers().forEach(player -> Message.SCOREBOARD_ENTRY.sendTo(player,
-                            rankReplacement.replacement(String.valueOf(rank.getAndIncrement())).build(),
-                            nameReplacement.replacement(entry.getKey().getName()).build(),
-                            hitsReplacement.replacement(String.valueOf(entry.getValue())).build()
-                    ));
-                });
+        getPlayers().forEach(player -> {
+            AtomicInteger rank = new AtomicInteger(1);
+            score.entrySet().stream()
+                    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                    .limit(5)
+                    .forEach(entry -> {
+                        Message.SCOREBOARD_ENTRY.sendTo(player,
+                                rankReplacement.replacement(String.valueOf(rank.getAndIncrement())).build(),
+                                nameReplacement.replacement(entry.getKey().getName()).build(),
+                                hitsReplacement.replacement(String.valueOf(entry.getValue())).build()
+                        );
+                    });
+        });
     }
 
     @Override
