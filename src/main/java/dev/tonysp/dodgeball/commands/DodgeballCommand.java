@@ -26,7 +26,6 @@ public class DodgeballCommand implements CommandExecutor {
         if (args.length == 0) {
             sender.sendMessage(TITLE);
             sender.sendMessage(ChatColor.GOLD + "/" + usedCommand + " " + ChatColor.YELLOW + "join" + ChatColor.GRAY + " - Join lobby");
-            sender.sendMessage(ChatColor.GOLD + "/" + usedCommand + " " + ChatColor.YELLOW + "player [name]" + ChatColor.GRAY + " - Shows player's stats");
             return true;
         }
 
