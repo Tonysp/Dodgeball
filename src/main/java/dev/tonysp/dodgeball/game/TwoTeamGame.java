@@ -3,6 +3,7 @@ package dev.tonysp.dodgeball.game;
 import dev.tonysp.dodgeball.Message;
 import dev.tonysp.dodgeball.game.arena.Arena;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TextReplacementConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -13,6 +14,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class TwoTeamGame extends Game {
 
@@ -109,19 +111,16 @@ public class TwoTeamGame extends Game {
         TextReplacementConfig.Builder nameReplacement = TextReplacementConfig.builder().match("%NAME%");
         TextReplacementConfig.Builder hitsReplacement = TextReplacementConfig.builder().match("%HITS%");
 
-        getPlayers().forEach(player -> {
-            AtomicInteger rank = new AtomicInteger(1);
-            score.entrySet().stream()
-                    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                    .limit(5)
-                    .forEach(entry -> {
-                        Message.SCOREBOARD_ENTRY.sendTo(player,
-                                rankReplacement.replacement(String.valueOf(rank.getAndIncrement())).build(),
-                                nameReplacement.replacement(entry.getKey().getName()).build(),
-                                hitsReplacement.replacement(String.valueOf(entry.getValue())).build()
-                        );
-                    });
-        });
+        AtomicInteger rank = new AtomicInteger(1);
+        List<TextComponent> finalScoreboard = score.entrySet().stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .limit(5)
+                .map(entry -> Message.SCOREBOARD_ENTRY.getMessage(
+                        rankReplacement.replacement(String.valueOf(rank.getAndIncrement())).build(),
+                        nameReplacement.replacement(entry.getKey().getName()).build(),
+                        hitsReplacement.replacement(String.valueOf(entry.getValue())).build()
+                )).toList();
+        getPlayers().forEach(player -> finalScoreboard.forEach(player::sendMessage));
     }
 
     @Override

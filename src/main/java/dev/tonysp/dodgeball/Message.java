@@ -1,5 +1,6 @@
 package dev.tonysp.dodgeball;
 
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -40,6 +41,23 @@ public enum Message {
         return message;
     }
 
+    public TextComponent getMessage (TextReplacementConfig... replacements) {
+        return getMessage(Arrays.asList(replacements));
+    }
+
+    public TextComponent getMessage (Iterable<? extends TextReplacementConfig> replacements) {
+        if (!isMessageSet) {
+            return Component.empty();
+        }
+
+        TextComponent finalMessage = PREFIX.getMessage().append(getMessage());
+        for (TextReplacementConfig variable : replacements) {
+            finalMessage = (TextComponent) finalMessage.replaceText(variable);
+        }
+
+        return finalMessage;
+    }
+
     public static LegacyComponentSerializer getSerializer () {
         return serializer;
     }
@@ -60,11 +78,7 @@ public enum Message {
             return;
         }
 
-        TextComponent finalMessage = PREFIX.getMessage().append(getMessage());
-        for (TextReplacementConfig variable : replacements) {
-            finalMessage = (TextComponent) finalMessage.replaceText(variable);
-        }
-        player.sendMessage(finalMessage);
+        player.sendMessage(getMessage(replacements));
     }
 
     public void sendTo (Player player, TextReplacementConfig... replacements) {
