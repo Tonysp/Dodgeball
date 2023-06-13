@@ -1,0 +1,22 @@
+arenas:
+  first-arena:
+    name: "Dodgeball Arena"
+    arena-region: regionName
+    line-region: lineRegionName
+    lobby-spawn-point: "125,25,123,0,0,world"
+    red-team-spawns:
+      - "125,25,123,0,0,world"
+      - "125,25,123,0,0,world"
+    blue-team-spawns:
+      - "125,25,123,20.5,15.1,world"
+      - "125,25,123,20.5,15.1,world"
+
+messages:
+  prefix: "&#625D5D[&#2554C7Dodgeball&#625D5D]&r "
+  already-in-game: "&#E5E4E2You are already in a game."
+  you-joined: "&#E5E4E2You have joined a game! Please wait..."
+  all-arenas-full: "&#E5E4E2All arenas are full. Please try again later."
+  team-win-announce: "&#E5E4E2Team %TEAM% won the game!"
+  tie-announce: "&#E5E4E2The game is a tie!"
+  scoreboard-title: "Top players:"
+  scoreboard-entry: "%RANK%. %NAME% - %HITS% hits"

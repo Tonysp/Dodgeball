@@ -1,0 +1,13 @@
+name: Dodgeball
+main: dev.tonysp.dodgeball.Dodgeball
+version: 1.0
+authors: [Tonysp]
+description: Dodgeball minigame plugin
+depend: [WorldEdit,WorldGuard]
+softdepend: [PlaceholderAPI]
+api-version: 1.19
+
+commands:
+  dodgeball:
+    description: Main command
+    aliases: [db]

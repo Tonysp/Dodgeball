@@ -1,0 +1,7 @@
+Notable features
+- modular system allowing smooth reloading of plugin
+
+Possible areas of improvement
+- add more configuration options
+- arena creation cannot be done in game
+- player inventories are not backed up, only cleared
