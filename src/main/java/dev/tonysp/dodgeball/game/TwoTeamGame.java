@@ -4,6 +4,7 @@ import dev.tonysp.dodgeball.Message;
 import dev.tonysp.dodgeball.game.arena.Arena;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -45,7 +46,13 @@ public class TwoTeamGame extends Game {
             remainingLobbyTicks--;
 
             if (remainingLobbyTicks <= 0) {
-                startGame();
+                if (getPlayers().size() <= 1) {
+                    int fiveSeconds = GameManager.TICKRATE * 5;
+                    remainingLobbyTicks += fiveSeconds;
+                    remainingTicks += fiveSeconds;
+                } else {
+                    startGame();
+                }
             }
         } else if (getGameState() == GameState.IN_PROGRESS) {
             if (countPlayersInGame(Team.RED) == 0 ||  countPlayersInGame(Team.BLUE) == 0) {
@@ -102,7 +109,7 @@ public class TwoTeamGame extends Game {
         score.entrySet().stream()
                 .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
                 .limit(5)
-                .forEach(entry -> getPlayers().forEach(player -> Message.TEAM_WIN_ANNOUNCE.sendTo(player,
+                .forEach(entry -> getPlayers().forEach(player -> Message.SCOREBOARD_ENTRY.sendTo(player,
                         rankReplacement.replacement(String.valueOf(rank.getAndIncrement())).build(),
                         nameReplacement.replacement(entry.getKey().getName()).build(),
                         hitsReplacement.replacement(String.valueOf(entry.getValue())).build()
@@ -125,6 +132,8 @@ public class TwoTeamGame extends Game {
         teamPlayers.get(Team.RED).forEach(player -> arena.pickNextSpawnPoint(Team.RED).teleport(player));
         teamPlayers.get(Team.BLUE).forEach(player -> arena.pickNextSpawnPoint(Team.BLUE).teleport(player));
 
+        getPlayers().forEach(player -> player.setGameMode(GameMode.SURVIVAL));
+
         getPlayers().forEach(player -> player.getInventory().clear());
         getPlayers().forEach(player -> player.getInventory().addItem(new ItemStack(Material.SNOWBALL)));
     }
@@ -132,7 +141,9 @@ public class TwoTeamGame extends Game {
     @Override
     public void startGame () {
         setGameState(GameState.IN_PROGRESS);
-        remainingTicks -= remainingLobbyTicks;
+        if (remainingLobbyTicks > 0) {
+            remainingTicks -= remainingLobbyTicks;
+        }
 
         teleportAllPlayersToArena();
     }

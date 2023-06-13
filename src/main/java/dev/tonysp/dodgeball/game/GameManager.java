@@ -134,8 +134,8 @@ public class GameManager extends Manager implements Listener {
 
         Arena arena = gameOptional.get().getArena();
         // If player moves into the middle line, cancel the event.
-        if (!arena.isLocationInMiddleLine(event.getFrom())
-                && arena.isLocationInArena(event.getTo())) {
+        if (arena.isLocationInMiddleLine(event.getFrom())
+                && arena.isLocationInMiddleLine(event.getTo())) {
             event.setCancelled(true);
         }
     }

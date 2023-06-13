@@ -53,6 +53,7 @@ public abstract class Game {
         }
 
         players.add(player);
+        arena.getLobbySpawn().teleport(player);
         Message.YOU_JOINED.sendTo(player);
         return true;
     }
