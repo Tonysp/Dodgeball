@@ -58,7 +58,7 @@ public class DodgeballCommand implements CommandExecutor {
             }
 
             Player player = (Player) sender;
-            plugin.games().joinGame(player);
+            plugin.gameManager().joinGame(player);
         }
         return true;
     }

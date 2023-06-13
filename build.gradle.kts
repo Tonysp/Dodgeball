@@ -10,6 +10,7 @@ repositories {
     maven(url = "https://repo.papermc.io/repository/maven-public/")
     maven(url = "https://maven.enginehub.org/repo/")
     maven(url = "https://repo.extendedclip.com/content/repositories/placeholderapi/")
+    maven(url = "https://repo.dmulloy2.net/repository/public/")
 }
 
 dependencies {
@@ -19,4 +20,5 @@ dependencies {
     compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.0")
     compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.0.1")
     compileOnly("me.clip:placeholderapi:2.11.3")
+    compileOnly("com.comphenix.protocol:ProtocolLib:4.8.0")
 }

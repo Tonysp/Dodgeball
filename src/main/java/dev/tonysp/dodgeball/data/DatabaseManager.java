@@ -72,7 +72,6 @@ public class DatabaseManager extends Manager {
             try (Connection connection = getConnection();
                  PreparedStatement sql = connection.prepareStatement("INSERT INTO dodgeball_score (uuid, score) VALUES (?,?) ON DUPLICATE KEY UPDATE score = score + ?;");
             ) {
-
                 sql.setString(1, uuid.toString());
                 sql.setInt(2, addScore);
                 sql.setInt(3, addScore);

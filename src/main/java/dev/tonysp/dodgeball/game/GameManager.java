@@ -14,6 +14,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -50,12 +51,10 @@ public class GameManager extends Manager implements Listener {
             for (Game game : games) {
                 game.tick();
                 if (game.getGameState() == GameState.FINISHED) {
-                    plugin.arenas().unlockArena(game.getArena());
+                    plugin.arenaManager().unlockArena(game.getArena());
                 }
             }
             games.removeIf(game -> game.getGameState() == GameState.FINISHED);
-
-            getOrCreateJoinableGame();
         }, 0, 20 / TICKRATE);
 
         return true;
@@ -65,6 +64,7 @@ public class GameManager extends Manager implements Listener {
     public boolean unload () {
         ProjectileHitEvent.getHandlerList().unregister(this);
         PlayerMoveEvent.getHandlerList().unregister(this);
+        PlayerQuitEvent.getHandlerList().unregister(this);
 
         Bukkit.getScheduler().cancelTask(gameTickTaskId);
         games.forEach(Game::cancelGame);
@@ -91,6 +91,13 @@ public class GameManager extends Manager implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerQuitEvent (PlayerQuitEvent event) {
+        games.stream()
+                .filter(game -> game.getPlayers().contains(event.getPlayer()))
+                .forEach(game -> game.leave(event.getPlayer()));
+    }
+
     public Optional<Game> getOrCreateJoinableGame () {
         Optional<Game> gameOptional = games.stream()
                 .filter(game -> game.getGameState() == GameState.IN_LOBBY)
@@ -99,7 +106,7 @@ public class GameManager extends Manager implements Listener {
         if (gameOptional.isPresent()) {
             return gameOptional;
         } else {
-            Optional<Arena> arena = plugin.arenas().getAndLockFreeArena();
+            Optional<Arena> arena = plugin.arenaManager().getAndLockFreeArena();
             if (arena.isEmpty()) {
                 return Optional.empty();
             }

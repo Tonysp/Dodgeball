@@ -92,6 +92,59 @@ public class ArenaManager extends Manager {
         return true;
     }
 
+    private void loadArena (String arenaName) {
+        Dodgeball.log("... loading arena " + arenaName);
+        ConfigurationSection arenaConfig = config.getConfigurationSection("arenas." + arenaName);
+        if (arenaConfig == null) {
+            Dodgeball.logWarning("error while loading arena: invalid arena config");
+            return;
+        }
+
+        String name = arenaConfig.getString("name");
+        String arenaRegionName = arenaConfig.getString("arena-region", "");
+
+        if (arenaRegionName.isEmpty()) {
+            Dodgeball.logWarning("error while loading arena: WorldGuard arena region name must be specified");
+            return false;
+        }
+
+        String lineRegionName = arenaConfig.getString("line-region", "");
+        if (lineRegionName.isEmpty()) {
+            Dodgeball.logWarning("error while loading arena: WorldGuard line region name must be specified");
+            return false;
+        }
+
+        Optional<SpawnPoint> lobbySpawnPoint = parseSpawnPointString(arenaConfig.getString("lobby-spawn-point"));
+        if (lobbySpawnPoint.isEmpty()) {
+            Dodgeball.logWarning("error while loading arena: no lobby teleport specified");
+            continue;
+        }
+
+        List<String> redTeamSpawnsStrings = arenaConfig.getStringList("red-team-spawns");
+        List<SpawnPoint> redTeamSpawns = loadSpawns(redTeamSpawnsStrings);
+        if (redTeamSpawns.isEmpty()) {
+            Dodgeball.logWarning("error while loading arena: no red team spawns loaded");
+            continue;
+        }
+
+        List<String> blueTeamSpawnsStrings = arenaConfig.getStringList("blue-team-spawns");
+        List<SpawnPoint> blueTeamSpawns = loadSpawns(blueTeamSpawnsStrings);
+        if (blueTeamSpawns.isEmpty()) {
+            Dodgeball.logWarning("error while loading arena: no blue team spawns loaded");
+            continue;
+        }
+        Map<Team, List<SpawnPoint>> teamSpawns = new HashMap<>();
+        teamSpawns.put(Team.RED, redTeamSpawns);
+        teamSpawns.put(Team.BLUE, blueTeamSpawns);
+
+        Arena arena = new Arena(name, arenaRegionName, lineRegionName, lobbySpawnPoint.get(), teamSpawns);
+
+        if (!arena.getPlayerSpawns().stream().allMatch(spawnPoint -> arena.isLocationInArena(spawnPoint.getLocation()))) {
+            Dodgeball.logWarning("error while loading arena: spawn points must be inside the arena region");
+            continue;
+        }
+    }
+
     @Override
     public boolean unload () {
         return true;

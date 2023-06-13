@@ -70,8 +70,12 @@ public class TwoTeamGame extends Game {
     }
 
     public void teleportAllPlayersBack () {
-        getPlayers().forEach(player -> player.getInventory().clear());
-        getPlayers().forEach(player -> player.teleport(arena.getLobbySpawn().getLocation().getWorld().getSpawnLocation()));
+        getPlayers().forEach(this::teleportPlayerBack);
+    }
+
+    private void teleportPlayerBack (Player player) {
+        player.getInventory().clear();
+        player.teleport(arena.getLobbySpawn().getLocation().getWorld().getSpawnLocation());
     }
 
     @Override
@@ -105,15 +109,17 @@ public class TwoTeamGame extends Game {
         TextReplacementConfig.Builder nameReplacement = TextReplacementConfig.builder().match("%NAME%");
         TextReplacementConfig.Builder hitsReplacement = TextReplacementConfig.builder().match("%HITS%");
 
-        AtomicInteger rank = new AtomicInteger(1);
         score.entrySet().stream()
                 .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
                 .limit(5)
-                .forEach(entry -> getPlayers().forEach(player -> Message.SCOREBOARD_ENTRY.sendTo(player,
-                        rankReplacement.replacement(String.valueOf(rank.getAndIncrement())).build(),
-                        nameReplacement.replacement(entry.getKey().getName()).build(),
-                        hitsReplacement.replacement(String.valueOf(entry.getValue())).build()
-                )));
+                .forEach(entry -> {
+                    AtomicInteger rank = new AtomicInteger(1);
+                    getPlayers().forEach(player -> Message.SCOREBOARD_ENTRY.sendTo(player,
+                            rankReplacement.replacement(String.valueOf(rank.getAndIncrement())).build(),
+                            nameReplacement.replacement(entry.getKey().getName()).build(),
+                            hitsReplacement.replacement(String.valueOf(entry.getValue())).build()
+                    ));
+                });
     }
 
     @Override
@@ -156,6 +162,18 @@ public class TwoTeamGame extends Game {
             } else {
                 teamPlayers.get(Team.RED).add(player);
             }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean leave (Player player) {
+        if (super.leave(player)) {
+            teamPlayers.get(Team.RED).remove(player);
+            teamPlayers.get(Team.BLUE).remove(player);
+            teleportPlayerBack(player);
             return true;
         } else {
             return false;

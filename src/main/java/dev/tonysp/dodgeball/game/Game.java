@@ -58,6 +58,11 @@ public abstract class Game {
         return true;
     }
 
+    public boolean leave (Player player) {
+        players.remove(player);
+        return true;
+    }
+
     public boolean isFull () {
         return players.size() >= maxPlayers;
     }

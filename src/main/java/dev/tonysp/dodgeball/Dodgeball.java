@@ -49,13 +49,13 @@ public class Dodgeball extends JavaPlugin {
         Objects.requireNonNull(getCommand("dodgeball")).setExecutor(dodgeballCommand);
         Objects.requireNonNull(getCommand("db")).setExecutor(dodgeballCommand);
 
-        if (!arenas().load()) {
+        if (!arenaManager().load()) {
             return failed + " (arena module error)";
         }
-        if (!players().load()) {
+        if (!playerManager().load()) {
             return failed + " (player module error)";
         }
-        if (!games().load()) {
+        if (!gameManager().load()) {
             return failed + " (game module error)";
         }
 
@@ -72,9 +72,9 @@ public class Dodgeball extends JavaPlugin {
     }
 
     public String disable () {
-        players().unload();
-        games().unload();
-        arenas().unload();
+        playerManager().unload();
+        gameManager().unload();
+        arenaManager().unload();
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null && placeholders != null) {
             placeholders.unregister();
@@ -103,15 +103,15 @@ public class Dodgeball extends JavaPlugin {
         reloadConfig();
     }
 
-    public GameManager games () {
+    public GameManager gameManager () {
         return gameManager;
     }
 
-    public PlayerManager players () {
+    public PlayerManager playerManager () {
         return playerManager;
     }
 
-    public ArenaManager arenas () {
+    public ArenaManager arenaManager () {
         return arenaManager;
     }
 

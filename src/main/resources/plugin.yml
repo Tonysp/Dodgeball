@@ -3,7 +3,7 @@ main: dev.tonysp.dodgeball.Dodgeball
 version: 1.0
 authors: [Tonysp]
 description: Dodgeball minigame plugin
-depend: [WorldEdit,WorldGuard]
+depend: [WorldEdit,WorldGuard,ProtocolLib]
 softdepend: [PlaceholderAPI]
 api-version: 1.19
 
