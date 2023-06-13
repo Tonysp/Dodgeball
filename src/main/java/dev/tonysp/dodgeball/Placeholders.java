@@ -57,7 +57,7 @@ public class Placeholders extends PlaceholderExpansion {
 
         if (param.contains("alive")) {
             Team team = Team.valueOf(param.split("alive")[1].split("-")[1].toUpperCase());
-            String arenaName = param.split("alive")[1].split("-")[2];
+            String arenaName = param.split("alive")[1].split("-")[2].toLowerCase();
             Optional<Arena> arena = plugin.arenaManager().getArenaByName(arenaName);
             if (arena.isEmpty()
                     || arena.get().getActiveGame() == null

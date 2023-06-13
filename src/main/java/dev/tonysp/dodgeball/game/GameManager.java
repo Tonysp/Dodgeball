@@ -1,5 +1,9 @@
 package dev.tonysp.dodgeball.game;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.wrappers.WrappedBlockData;
 import dev.tonysp.dodgeball.Dodgeball;
 import dev.tonysp.dodgeball.Manager;
 import dev.tonysp.dodgeball.Message;
@@ -8,24 +12,26 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public class GameManager extends Manager implements Listener {
 
 
     // How many times per second does the game tick. Cannot be greater than 20, or smaller than 1.
-    public static int TICKRATE = 1;
+    public static int TICKRATE = 4;
 
     private int gameTickTaskId;
 
@@ -63,7 +69,6 @@ public class GameManager extends Manager implements Listener {
     @Override
     public boolean unload () {
         ProjectileHitEvent.getHandlerList().unregister(this);
-        PlayerMoveEvent.getHandlerList().unregister(this);
         PlayerQuitEvent.getHandlerList().unregister(this);
 
         Bukkit.getScheduler().cancelTask(gameTickTaskId);
@@ -126,24 +131,5 @@ public class GameManager extends Manager implements Listener {
         getOrCreateJoinableGame().ifPresentOrElse(game -> game.join(player), () -> {
             Message.ALL_ARENAS_FULL.sendTo(player);
         });
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerMoveEvent (PlayerMoveEvent event) {
-        if (event.getPlayer().getGameMode() != GameMode.SURVIVAL) {
-            return;
-        }
-
-        Optional<Game> gameOptional = games.stream().filter(game -> game.getPlayers().contains(event.getPlayer())).findAny();
-        if (gameOptional.isEmpty()) {
-            return;
-        }
-
-        Arena arena = gameOptional.get().getArena();
-        // If player moves into the middle line, cancel the event.
-        if (arena.isLocationInMiddleLine(event.getFrom())
-                && arena.isLocationInMiddleLine(event.getTo())) {
-            event.setCancelled(true);
-        }
     }
 }

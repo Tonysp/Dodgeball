@@ -1,17 +1,21 @@
 package dev.tonysp.dodgeball.game;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.wrappers.WrappedBlockData;
+import dev.tonysp.dodgeball.Dodgeball;
 import dev.tonysp.dodgeball.Message;
 import dev.tonysp.dodgeball.game.arena.Arena;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TextReplacementConfig;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -50,16 +54,30 @@ public class TwoTeamGame extends Game {
             if (remainingLobbyTicks <= 0) {
                 if (getPlayers().size() <= 1) {
                     int fiveSeconds = GameManager.TICKRATE * 5;
-                    remainingLobbyTicks += fiveSeconds;
+                    remainingLobbyTicks += fiveSeconds + 1;
                     remainingTicks += fiveSeconds;
+                    getPlayers().forEach(Message.WAITING_FOR_PLAYERS::sendTo);
                 } else {
                     startGame();
                 }
+            } else if (remainingLobbyTicks % (GameManager.TICKRATE * 5) == 0) {
+                TextReplacementConfig replacement = TextReplacementConfig.builder().match("%TIME%")
+                        .replacement(String.valueOf(remainingLobbyTicks / GameManager.TICKRATE))
+                        .build();
+                getPlayers().forEach(player -> Message.STARTING_IN.sendTo(player, replacement));
             }
         } else if (getGameState() == GameState.IN_PROGRESS) {
             if (countPlayersInGame(Team.RED) == 0 ||  countPlayersInGame(Team.BLUE) == 0) {
                 finishGame();
             }
+
+            // Eliminate players standing in the middle
+            List<Player> playersInMiddle = getPlayers().stream()
+                    .filter(player -> player.getGameMode() == GameMode.SURVIVAL)
+                    .filter(player -> arena.isLocationInMiddleLine(player.getLocation()))
+                    .toList();
+            playersInMiddle.forEach(this::leave);
+            playersInMiddle.forEach(Message.ELIMINATED_MIDDLE::sendTo);
         }
     }
 
@@ -78,14 +96,21 @@ public class TwoTeamGame extends Game {
     private void teleportPlayerBack (Player player) {
         player.getInventory().clear();
         player.teleport(arena.getLobbySpawn().getLocation().getWorld().getSpawnLocation());
+        player.setGameMode(GameMode.SURVIVAL);
     }
 
     @Override
     public void finishGame () {
         setGameState(GameState.FINISHED);
-        teleportAllPlayersBack();
 
         announceScore();
+
+        getPlayers().forEach(player -> {
+            int playerScore = score.getOrDefault(player, 0);
+            if (playerScore > 0) {
+                Dodgeball.getInstance().databaseManager().updateScore(player.getUniqueId(), score.get(player));
+            }
+        });
 
         String winningTeamName;
         long redTeamPlayerCount = countPlayersInGame(Team.RED);
@@ -103,10 +128,10 @@ public class TwoTeamGame extends Game {
                 .replacement(Component.text(winningTeamName))
                 .build();
         getPlayers().forEach(player -> Message.TEAM_WIN_ANNOUNCE.sendTo(player, replacement));
+        teleportAllPlayersBack();
     }
 
     private void announceScore () {
-        getPlayers().forEach(Message.SCOREBOARD_TITLE::sendTo);
         TextReplacementConfig.Builder rankReplacement = TextReplacementConfig.builder().match("%RANK%");
         TextReplacementConfig.Builder nameReplacement = TextReplacementConfig.builder().match("%NAME%");
         TextReplacementConfig.Builder hitsReplacement = TextReplacementConfig.builder().match("%HITS%");
@@ -120,7 +145,10 @@ public class TwoTeamGame extends Game {
                         nameReplacement.replacement(entry.getKey().getName()).build(),
                         hitsReplacement.replacement(String.valueOf(entry.getValue())).build()
                 )).toList();
-        getPlayers().forEach(player -> finalScoreboard.forEach(player::sendMessage));
+        if (finalScoreboard.size() > 0) {
+            getPlayers().forEach(Message.SCOREBOARD_TITLE::sendTo);
+            getPlayers().forEach(player -> finalScoreboard.forEach(player::sendMessage));
+        }
     }
 
     @Override

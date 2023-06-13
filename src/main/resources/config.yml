@@ -1,6 +1,10 @@
+mysql:
+  url: "jdbc:postgresql://localhost:port/database"
+  username: ""
+  password: ""
+
 arenas:
-  first-arena:
-    name: "Dodgeball Arena"
+  firstArena:
     arena-region: regionName
     line-region: lineRegionName
     lobby-spawn-point: "125,25,123,0,0,world"
@@ -20,3 +24,6 @@ messages:
   tie-announce: "&#E5E4E2The game is a tie!"
   scoreboard-title: "Top players:"
   scoreboard-entry: "%RANK%. %NAME% - %HITS% hits"
+  eliminated-middle: "&#E5E4E2You have been eliminated for standing in the middle!"
+  starting-in: "&#E5E4E2The game is starting in %TIME% seconds..."
+  waiting-for-players: "&#E5E4E2...waiting for more players."

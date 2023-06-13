@@ -4,12 +4,10 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
-import java.util.UUID;
 
 public enum Message {
     PREFIX,
@@ -20,6 +18,9 @@ public enum Message {
     TIE_ANNOUNCE,
     SCOREBOARD_TITLE,
     SCOREBOARD_ENTRY,
+    ELIMINATED_MIDDLE,
+    STARTING_IN,
+    WAITING_FOR_PLAYERS,
     ;
 
     private TextComponent message;

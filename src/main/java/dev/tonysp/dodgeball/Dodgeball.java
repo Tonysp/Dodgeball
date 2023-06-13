@@ -1,9 +1,9 @@
 package dev.tonysp.dodgeball;
 
 import dev.tonysp.dodgeball.commands.DodgeballCommand;
+import dev.tonysp.dodgeball.data.DatabaseManager;
 import dev.tonysp.dodgeball.game.GameManager;
 import dev.tonysp.dodgeball.game.arena.ArenaManager;
-import dev.tonysp.dodgeball.game.player.PlayerManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -19,7 +19,7 @@ public class Dodgeball extends JavaPlugin {
         return getPlugin(Dodgeball.class);
     }
 
-    private final PlayerManager playerManager = new PlayerManager(this);
+    private final DatabaseManager databaseManager = new DatabaseManager(this);
     private final GameManager gameManager = new GameManager(this);
     private final ArenaManager arenaManager = new ArenaManager(this);
 
@@ -49,11 +49,11 @@ public class Dodgeball extends JavaPlugin {
         Objects.requireNonNull(getCommand("dodgeball")).setExecutor(dodgeballCommand);
         Objects.requireNonNull(getCommand("db")).setExecutor(dodgeballCommand);
 
+        if (!databaseManager().load()) {
+            return failed + " (database module error)";
+        }
         if (!arenaManager().load()) {
             return failed + " (arena module error)";
-        }
-        if (!playerManager().load()) {
-            return failed + " (player module error)";
         }
         if (!gameManager().load()) {
             return failed + " (game module error)";
@@ -72,9 +72,9 @@ public class Dodgeball extends JavaPlugin {
     }
 
     public String disable () {
-        playerManager().unload();
         gameManager().unload();
         arenaManager().unload();
+        databaseManager().unload();
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null && placeholders != null) {
             placeholders.unregister();
@@ -107,8 +107,8 @@ public class Dodgeball extends JavaPlugin {
         return gameManager;
     }
 
-    public PlayerManager playerManager () {
-        return playerManager;
+    public DatabaseManager databaseManager () {
+        return databaseManager;
     }
 
     public ArenaManager arenaManager () {

@@ -8,9 +8,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class DatabaseManager extends Manager {
@@ -32,6 +29,7 @@ public class DatabaseManager extends Manager {
         hikariConfig.setJdbcUrl(url);
         hikariConfig.setUsername(username);
         hikariConfig.setPassword(password);
+        hikariConfig.setDataSourceClassName("org.postgresql.ds.PGSimpleDataSource");
         hikariDataSource = new HikariDataSource(this.hikariConfig);
 
         try {
@@ -59,7 +57,7 @@ public class DatabaseManager extends Manager {
 
     public void initializeTables(){
         try (Connection connection = getConnection()) {
-            PreparedStatement sql = connection.prepareStatement("CREATE TABLE IF NOT EXISTS dodgeball_score (`uuid` varchar(36) NOT NULL,`score` int(10) unsigned NOT NULL, PRIMARY KEY (`uuid`)) ENGINE=InnoDB DEFAULT CHARSET=latin1;");
+            PreparedStatement sql = connection.prepareStatement("CREATE TABLE IF NOT EXISTS dodgeball_score (uuid varchar(36) NOT NULL, score int NOT NULL, PRIMARY KEY (uuid));");
             sql.executeUpdate();
             sql.close();
         } catch (Exception e) {
@@ -70,7 +68,7 @@ public class DatabaseManager extends Manager {
     public void updateScore (UUID uuid, int addScore){
         Bukkit.getScheduler().runTask(Dodgeball.getInstance(), () -> {
             try (Connection connection = getConnection();
-                 PreparedStatement sql = connection.prepareStatement("INSERT INTO dodgeball_score (uuid, score) VALUES (?,?) ON DUPLICATE KEY UPDATE score = score + ?;");
+                 PreparedStatement sql = connection.prepareStatement("INSERT INTO dodgeball_score (uuid, score) VALUES (?,?) ON CONFLICT (uuid) DO UPDATE SET score = dodgeball_score.score + ?;");
             ) {
                 sql.setString(1, uuid.toString());
                 sql.setInt(2, addScore);
